@@ -8,3 +8,12 @@ class Item:
         '''Create a named item for a given slot'''
         self.name = name
         self.slot = slot
+
+
+class Gear(Item):
+    '''A model of a gear piece'''
+
+    def __init__(self, name, slot, firearms):
+        '''Create a gear piece with the given attributes'''
+        Item.__init__(self, name, slot)
+        self.firearms = firearms
