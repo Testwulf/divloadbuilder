@@ -3,7 +3,7 @@ Main application entry point.
 '''
 
 from control import backpack
-from model.backpack import Gear
+from model.backpack import Gear, GearNotFound
 from ui.prompt import Prompt
 
 
@@ -22,6 +22,8 @@ def add_item():
         firearms = int(input('What Firearms bonus does it have? '))
         if backpack.add_gear(name, slot, firearms):
             print('%s added to the backpack' % name)
+        else:
+            print('An item by that name already exists. Use a new name.')
 
 
 def add_loadout():
@@ -31,27 +33,71 @@ def add_loadout():
         print('%s loadout added to backpack' % name)
 
 
+def inspect_loadout(loadout=None):
+    '''Display information for a loadout'''
+    if loadout is None:
+        # Choose a loadout
+        loadouts = backpack.get_loadouts()
+        print('Inspect which loadout?')
+        for index, loadout in enumerate(loadouts):
+            print(' %s] %s' % (index, loadout.name))
+        index = int(input('(Enter the loadout number): '))
+        loadout = loadouts[index]
+
+    total_firearms = 0
+
+    print('Name: %s' % loadout.name)
+    if loadout.slots is not None:
+        print('Gear:')
+        for slot in loadout.slots:
+            gear_name = loadout.slots[slot]
+            gear = backpack.get_item(gear_name)
+
+            total_firearms += gear.firearms
+
+            print('  %s] %s' % (slot, gear.name))
+            print('    Firearms: %s' % gear.firearms)
+
+        print('Total:')
+        print('  Firearms: %s' % total_firearms)
+    else:
+        print('No gear assigned to this loadout. Run "optimize loadout" to determine gear.')
+
+
+
 def list_items():
     '''List all items in the inventory'''
     item_list = backpack.get_items()
-    for item in item_list:
-        print('Name: %s (%s)' % (item.name, item.slot))
+    if item_list:
+        for item in item_list:
+            print('Name: %s (%s)' % (item.name, item.slot))
+    else:
+        print('No items found. Use "add item" to initialize your inventory.')
 
 
 def list_loadouts():
     '''List all current loadouts'''
     loadouts = backpack.get_loadouts()
-    for loadout in loadouts:
-        print('Name: %s' % loadout.name)
+    if loadouts:
+        for loadout in loadouts:
+            print('Name: %s' % loadout.name)
+    else:
+        print('No loadouts found. Use "add loadout" to initialize the list.')
 
 
 def optimize_loadout():
     '''Optimize a chosen loadout'''
     loadouts = backpack.get_loadouts()
     for index, loadout in enumerate(loadouts):
-        print(' %s] %s' % (index, loadout.name))
+        print('  %s] %s' % (index, loadout.name))
     index = int(input('(Enter the loadout number): '))
     loadout = loadouts[index]
+
+    try:
+        loadout = backpack.optimize(loadout)
+        inspect_loadout(loadout=loadout)
+    except GearNotFound as error:
+        print(error)
 
 
 # Command Registry
@@ -71,11 +117,11 @@ COMMANDS = {
         #item
         #loadout
     #}
-    #inspect: {
+    'inspect': {
         #agent
         #item
-        #loadout
-    #}
+        'loadout': inspect_loadout
+    },
     'list': {
         #agents
         'items': list_items,
