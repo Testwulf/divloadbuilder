@@ -24,6 +24,13 @@ def add_item():
             print('%s added to the backpack' % name)
 
 
+def add_loadout():
+    '''Add a loadout to the stash'''
+    name = input('What should this loadout be named? ')
+    if backpack.add_loadout(name):
+        print('%s loadout added to backpack' % name)
+
+
 def list_items():
     '''List all items in the inventory'''
     item_list = backpack.get_items()
@@ -34,11 +41,33 @@ def list_items():
 # Command Registry
 COMMANDS = {
     'add': {
-        'item': add_item
+        #agent:
+        'item': add_item,
+        'loadout': add_loadout
     },
+    #delete: {
+        #agent:
+        #item:
+        #loadout:
+    #}
+    #edit: {
+        #agent
+        #item
+        #loadout
+    #}
+    #inspect: {
+        #agent
+        #item
+        #loadout
+    #}
     'list': {
+        #agents
         'items': list_items
+        #loadouts
     }
+    #optimize: {
+        #loadout
+    #}
 }
 
 
