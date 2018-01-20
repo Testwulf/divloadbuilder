@@ -17,3 +17,11 @@ class Gear(Item):
         '''Create a gear piece with the given attributes'''
         Item.__init__(self, name, slot)
         self.firearms = firearms
+
+
+class Loadout():
+    '''A model of a gear loadout'''
+
+    def __init__(self, name):
+        '''Create a set of gear as a loadout'''
+        self.name = name
