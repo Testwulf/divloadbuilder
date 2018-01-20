@@ -19,9 +19,15 @@ class Gear(Item):
         self.firearms = firearms
 
 
+class GearNotFound(Exception):
+    '''A model of an error when gear is not found'''
+    pass
+
+
 class Loadout():
     '''A model of a gear loadout'''
 
     def __init__(self, name):
         '''Create a set of gear as a loadout'''
         self.name = name
+        self.slots = None
