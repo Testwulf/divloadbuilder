@@ -42,3 +42,8 @@ def add_loadout(name):
 def get_items():
     '''Returns the current inventory'''
     return INVENTORY
+
+
+def get_loadouts():
+    '''Returns the current loadouts'''
+    return LOADOUTS

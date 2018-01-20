@@ -38,6 +38,22 @@ def list_items():
         print('Name: %s (%s)' % (item.name, item.slot))
 
 
+def list_loadouts():
+    '''List all current loadouts'''
+    loadouts = backpack.get_loadouts()
+    for loadout in loadouts:
+        print('Name: %s' % loadout.name)
+
+
+def optimize_loadout():
+    '''Optimize a chosen loadout'''
+    loadouts = backpack.get_loadouts()
+    for index, loadout in enumerate(loadouts):
+        print(' %s] %s' % (index, loadout.name))
+    index = int(input('(Enter the loadout number): '))
+    loadout = loadouts[index]
+
+
 # Command Registry
 COMMANDS = {
     'add': {
@@ -62,12 +78,12 @@ COMMANDS = {
     #}
     'list': {
         #agents
-        'items': list_items
-        #loadouts
+        'items': list_items,
+        'loadouts': list_loadouts
+    },
+    'optimize': {
+        'loadout': optimize_loadout
     }
-    #optimize: {
-        #loadout
-    #}
 }
 
 
