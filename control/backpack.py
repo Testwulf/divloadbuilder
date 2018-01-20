@@ -1,6 +1,8 @@
 '''The backpack and inventory controller'''
 
 
+import random
+
 from model.backpack import Gear, GearNotFound, Loadout
 from . import cache
 
@@ -18,15 +20,15 @@ if cache.exists(LOADOUT_CACHE):
 # Possible Gear Slots
 SLOTS = {
     'Body Armor': Gear,
-    'Knee Pads': Gear,
     'Masks': Gear,
+    'Knee Pads': Gear,
     'Backpack': Gear,
     'Gloves': Gear,
     'Holster': Gear
 }
 
 
-def add_gear(name, slot, firearms):
+def add_gear(name, slot, armor, firearms, stamina, electronics):
     '''Add a new gear item to the backpack'''
     duplicate = False
     for existing_gear in INVENTORY:
@@ -35,7 +37,7 @@ def add_gear(name, slot, firearms):
             break
 
     if not duplicate:
-        new_gear = Gear(name, slot, firearms)
+        new_gear = Gear(name, slot, armor, firearms, stamina, electronics)
         INVENTORY.append(new_gear)
         cache.put(INVENTORY, INVENTORY_CACHE)
 
@@ -84,22 +86,61 @@ def optimize(loadout):
         for slot in loadout.slots:
             loadout.slots[slot] = None
 
-    for slot in loadout.slots:
-        gear = loadout.slots[slot]
-        if gear is None:
-            # No item has been assigned, so choose one to start
+    best_score = score_loadout(loadout)
+
+    run_limit = 20
+    runs = 0
+    while runs < run_limit:
+
+        test_loadout = Loadout(loadout.name)
+        test_loadout.slots = dict(loadout.slots)
+
+        for slot in loadout.slots:
+            gear = test_loadout.slots[slot]
+
             slot_items = get_items(slot)
-            if slot_items:
-                # TODO: Place a selection policy here
-                gear = slot_items[0]
-            else:
+            if not slot_items:
                 raise GearNotFound('No gear found for slot %s' % slot)
 
-            loadout.slots[slot] = gear.name
+            if gear is None:
+                # No item has been assigned, so choose one to start
+                # TODO: Place a selection policy here
+                gear = slot_items[0]
+                test_loadout.slots[slot] = gear.name
+            else:
+                # Found an item, replace with a random selection
+                random_gear = random.choice(slot_items)
+                test_loadout.slots[slot] = random_gear.name
 
-    update_loadout(loadout)
+        new_score = score_loadout(test_loadout)
+        if new_score > best_score:
+            best_score = new_score
+            update_loadout(test_loadout)
+            loadout = test_loadout
+
+        runs += 1
+        #TODO: Place output feedback here
 
     return loadout
+
+
+def score_loadout(loadout):
+    '''Calculate a score for the given loadout'''
+    score = 0
+
+    for slot in loadout.slots:
+        gear_name = loadout.slots[slot]
+
+        if gear_name is not None:
+            gear = get_item(gear_name)
+
+            score += gear.armor / loadout.weights['armor']
+
+            score += gear.firearms / loadout.weights['firearms']
+            score += gear.firearms / loadout.weights['stamina']
+            score += gear.electronics / loadout.weights['electronics']
+
+    return score
 
 
 def update_loadout(loadout):
