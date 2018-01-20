@@ -19,8 +19,11 @@ def add_item():
     slot = key_list[slot]
     slot_type = backpack.SLOTS[slot]
     if slot_type == Gear:
+        armor = int(input('How much armor does it have? '))
         firearms = int(input('What Firearms bonus does it have? '))
-        if backpack.add_gear(name, slot, firearms):
+        stamina = int(input('What Stamina bonus does it have? '))
+        electronics = int(input('What Electronics bonus does it have? '))
+        if backpack.add_gear(name, slot, armor, firearms, stamina, electronics):
             print('%s added to the backpack' % name)
         else:
             print('An item by that name already exists. Use a new name.')
@@ -44,7 +47,10 @@ def inspect_loadout(loadout=None):
         index = int(input('(Enter the loadout number): '))
         loadout = loadouts[index]
 
+    total_armor = 0
     total_firearms = 0
+    total_stamina = 0
+    total_electronics = 0
 
     print('Name: %s' % loadout.name)
     if loadout.slots is not None:
@@ -53,13 +59,24 @@ def inspect_loadout(loadout=None):
             gear_name = loadout.slots[slot]
             gear = backpack.get_item(gear_name)
 
+            total_armor += gear.armor
             total_firearms += gear.firearms
+            total_stamina += gear.stamina
+            total_electronics += gear.electronics
 
             print('  %s] %s' % (slot, gear.name))
+            print('    Armor: %s' % gear.armor)
             print('    Firearms: %s' % gear.firearms)
+            print('    Stamina: %s' % gear.stamina)
+            print('    Electronics: %s' % gear.electronics)
 
         print('Total:')
+        print('  Armor: %s' % total_armor)
         print('  Firearms: %s' % total_firearms)
+        print('  Stamina: %s' % total_stamina)
+        print('  Electronics: %s' % total_electronics)
+
+        print('Score: %s' % round(backpack.score_loadout(loadout), 2))
     else:
         print('No gear assigned to this loadout. Run "optimize loadout" to determine gear.')
 
