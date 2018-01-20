@@ -13,10 +13,13 @@ class Item:
 class Gear(Item):
     '''A model of a gear piece'''
 
-    def __init__(self, name, slot, firearms):
+    def __init__(self, name, slot, armor, firearms, stamina, electronics):
         '''Create a gear piece with the given attributes'''
         Item.__init__(self, name, slot)
+        self.armor = armor
         self.firearms = firearms
+        self.stamina = stamina
+        self.electronics = electronics
 
 
 class GearNotFound(Exception):
@@ -31,3 +34,9 @@ class Loadout():
         '''Create a set of gear as a loadout'''
         self.name = name
         self.slots = None
+        self.weights = {
+            'armor': 1.0,
+            'firearms': 1.0,
+            'stamina': 2.0,
+            'electronics': 1.0
+        }
