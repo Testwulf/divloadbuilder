@@ -52,6 +52,24 @@ def add_loadout(name):
     return True
 
 
+def delete_item(name):
+    '''Delete a given item from inventory'''
+    new_inventory = [item for item in INVENTORY if name != item.name]
+
+    INVENTORY.clear()
+    INVENTORY.extend(new_inventory)
+
+    loadouts = get_loadouts()
+    for loadout in loadouts:
+        for slot in loadout.slots:
+            gear_name = loadout.slots[slot]
+            if name == gear_name:
+                loadout.slots[slot] = None
+                update_loadout(loadout)
+
+    cache.put(INVENTORY, INVENTORY_CACHE)
+
+
 def get_item(name):
     '''Returns the item information for a given name'''
     item = None
@@ -88,7 +106,7 @@ def optimize(loadout):
 
     best_score = score_loadout(loadout)
 
-    run_limit = 20
+    run_limit = 10000
     runs = 0
     while runs < run_limit:
 
@@ -102,21 +120,16 @@ def optimize(loadout):
             if not slot_items:
                 raise GearNotFound('No gear found for slot %s' % slot)
 
-            if gear is None:
-                # No item has been assigned, so choose one to start
-                # TODO: Place a selection policy here
-                gear = slot_items[0]
-                test_loadout.slots[slot] = gear.name
-            else:
-                # Found an item, replace with a random selection
-                random_gear = random.choice(slot_items)
-                test_loadout.slots[slot] = random_gear.name
+            # No item has been assigned, so choose one to start
+            gear = random.choice(slot_items)
+            test_loadout.slots[slot] = gear.name
 
         new_score = score_loadout(test_loadout)
         if new_score > best_score:
             best_score = new_score
             update_loadout(test_loadout)
             loadout = test_loadout
+        #TODO Place simulated annealing check here
 
         runs += 1
         #TODO: Place output feedback here
@@ -134,11 +147,11 @@ def score_loadout(loadout):
         if gear_name is not None:
             gear = get_item(gear_name)
 
-            score += gear.armor / loadout.weights['armor']
+            score += gear.armor * loadout.weights['armor']
 
-            score += gear.firearms / loadout.weights['firearms']
-            score += gear.firearms / loadout.weights['stamina']
-            score += gear.electronics / loadout.weights['electronics']
+            score += gear.firearms * loadout.weights['firearms']
+            score += gear.stamina * loadout.weights['stamina']
+            score += gear.electronics * loadout.weights['electronics']
 
     return score
 
