@@ -36,6 +36,30 @@ def add_loadout():
         print('%s loadout added to backpack' % name)
 
 
+def delete_item():
+    '''Delete an item from the inventory'''
+    print('Which slot?')
+    key_list = []
+    for index, possible_slot in enumerate(backpack.SLOTS):
+        key_list.append(possible_slot)
+        print(' %s] %s' % (index, possible_slot))
+    slot = int(input('(Enter the slot number): '))
+    slot = key_list[slot]
+
+    item_list = backpack.get_items(slot_filter=slot)
+    if item_list:
+        print('Which item?')
+        for index, item in enumerate(item_list):
+            print(' %s] %s' % (index, item.name))
+        index = int(input('(Enter the item number): '))
+        item = item_list[index]
+
+        backpack.delete_item(item.name)
+        print(item.name, ' removed from inventory')
+    else:
+        print('No items found in that slot category.')
+
+
 def inspect_loadout(loadout=None):
     '''Display information for a loadout'''
     if loadout is None:
@@ -84,7 +108,21 @@ def inspect_loadout(loadout=None):
 
 def list_items():
     '''List all items in the inventory'''
-    item_list = backpack.get_items()
+
+    item_list = None
+
+    print('Which slot?')
+    key_list = []
+    for index, possible_slot in enumerate(backpack.SLOTS):
+        key_list.append(possible_slot)
+        print(' %s] %s' % (index, possible_slot))
+    slot = input('(Enter the slot number, Blank = All items): ')
+    if slot:
+        slot = key_list[int(slot)]
+        item_list = backpack.get_items(slot_filter=slot)
+    else:
+        item_list = backpack.get_items()
+
     if item_list:
         for item in item_list:
             print('Name: %s (%s)' % (item.name, item.slot))
@@ -124,11 +162,11 @@ COMMANDS = {
         'item': add_item,
         'loadout': add_loadout
     },
-    #delete: {
+    'delete': {
         #agent:
-        #item:
+        'item': delete_item
         #loadout:
-    #}
+    },
     #edit: {
         #agent
         #item
