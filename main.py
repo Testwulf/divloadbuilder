@@ -36,6 +36,45 @@ def add_loadout():
         print('%s loadout added to backpack' % name)
 
 
+def edit_loadout():
+    '''Edit a chosen loadout'''
+    loadouts = backpack.get_loadouts()
+    print('Which loadout would you like to edit?')
+    for index, loadout in enumerate(loadouts):
+        print('  %s] %s' % (index, loadout.name))
+    index = int(input('(Enter the loadout number): '))
+    loadout = loadouts[index]
+
+    print('Enter "y" to edit a value, or leave blank to skip.')
+
+    edit_name = input('Edit name? ')
+    if edit_name == 'y':
+        loadout.name = input('Enter a new name: ')
+
+    edit_armor = input('Edit Armor weight? ')
+    if edit_armor == 'y':
+        new_weight = float(input('Enter new weight: '))
+        loadout.weights['armor'] = new_weight
+
+    edit_firearms = input('Edit Firearms weight? ')
+    if edit_firearms == 'y':
+        new_weight = float(input('Enter new weight: '))
+        loadout.weights['firearms'] = new_weight
+
+    edit_stamina = input('Edit Stamina weight? ')
+    if edit_stamina == 'y':
+        new_weight = float(input('Enter new weight: '))
+        loadout.weights['stamina'] = new_weight
+
+    edit_electronics = input('Edit Electronics weight? ')
+    if edit_electronics == 'y':
+        new_weight = float(input('Enter new weight: '))
+        loadout.weights['electronics'] = new_weight
+
+    backpack.update_loadout(loadout)
+    print('Loadout updated.')
+
+
 def delete_item():
     '''Delete an item from the inventory'''
     print('Which slot?')
@@ -71,12 +110,17 @@ def inspect_loadout(loadout=None):
         index = int(input('(Enter the loadout number): '))
         loadout = loadouts[index]
 
+    print('Name: %s' % loadout.name)
+
+    print('Weights:')
+    for weight in loadout.weights:
+        print(' %s = %s' % (weight, loadout.weights[weight]))
+
     total_armor = 0
     total_firearms = 0
     total_stamina = 0
     total_electronics = 0
 
-    print('Name: %s' % loadout.name)
     if loadout.slots is not None:
         print('Gear:')
         for slot in loadout.slots:
@@ -123,9 +167,17 @@ def list_items():
     else:
         item_list = backpack.get_items()
 
+    print('Which loadout should be used for scoring?')
+    loadouts = backpack.get_loadouts()
+    for index, loadout in enumerate(loadouts):
+        print('  %s] %s' % (index, loadout.name))
+    index = int(input('(Enter the loadout number): '))
+    loadout = loadouts[index]
+
     if item_list:
         for item in item_list:
             print('Name: %s (%s)' % (item.name, item.slot))
+            print('  Score: %s' % backpack.score_item(loadout, item))
     else:
         print('No items found. Use "add item" to initialize your inventory.')
 
@@ -167,11 +219,11 @@ COMMANDS = {
         'item': delete_item
         #loadout:
     },
-    #edit: {
+    'edit': {
         #agent
         #item
-        #loadout
-    #}
+        'loadout' : edit_loadout
+    },
     'inspect': {
         #agent
         #item
