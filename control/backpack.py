@@ -1,6 +1,7 @@
 '''The backpack and inventory controller'''
 
 
+import copy
 import random
 
 from model.backpack import Gear, GearNotFound, Loadout
@@ -77,6 +78,10 @@ def get_item(name):
         if name == gear.name:
             item = gear
             break
+
+    if item is None:
+        raise GearNotFound('No item found by name: %s' % name)
+
     return item
 
 
@@ -106,23 +111,20 @@ def optimize(loadout):
 
     best_score = score_loadout(loadout)
 
-    run_limit = 10000
+    run_limit = 20000
     runs = 0
     while runs < run_limit:
 
-        test_loadout = Loadout(loadout.name)
-        test_loadout.slots = dict(loadout.slots)
+        test_loadout = copy.deepcopy(loadout)
 
-        for slot in loadout.slots:
-            gear = test_loadout.slots[slot]
+        random_slot = random.choice(list(loadout.slots.keys()))
 
-            slot_items = get_items(slot)
-            if not slot_items:
-                raise GearNotFound('No gear found for slot %s' % slot)
+        slot_items = get_items(random_slot)
+        if not slot_items:
+            raise GearNotFound('No gear found for slot %s' % random_slot)
 
-            # No item has been assigned, so choose one to start
-            gear = random.choice(slot_items)
-            test_loadout.slots[slot] = gear.name
+        gear = random.choice(slot_items)
+        test_loadout.slots[random_slot] = gear.name
 
         new_score = score_loadout(test_loadout)
         if new_score > best_score:
@@ -134,8 +136,25 @@ def optimize(loadout):
         runs += 1
         #TODO: Place output feedback here
 
+    update_loadout(loadout)
+
     return loadout
 
+
+def score_item(loadout, item):
+    '''Calculate a score for a given item using a given loadout weights'''
+    score = 0
+
+    armor_score = item.armor * loadout.weights['armor']
+    score += armor_score
+
+    target_firearms = item.firearms * loadout.weights['firearms']
+    target_stamina = item.stamina * loadout.weights['stamina']
+    target_electronics = item.electronics * loadout.weights['electronics']
+
+    score += target_firearms + target_stamina + target_electronics
+
+    return score
 
 def score_loadout(loadout):
     '''Calculate a score for the given loadout'''
@@ -146,20 +165,20 @@ def score_loadout(loadout):
 
         if gear_name is not None:
             gear = get_item(gear_name)
-
-            score += gear.armor * loadout.weights['armor']
-
-            score += gear.firearms * loadout.weights['firearms']
-            score += gear.stamina * loadout.weights['stamina']
-            score += gear.electronics * loadout.weights['electronics']
+            score += score_item(loadout, item)
 
     return score
 
 
 def update_loadout(loadout):
     '''Update a given loadout in the cache'''
+    remove_loadout = None
     for existing_loadout in LOADOUTS:
         if loadout.name == existing_loadout.name:
-            existing_loadout = loadout
-            cache.put(LOADOUTS, LOADOUT_CACHE)
+            remove_loadout = existing_loadout
             break
+
+    if remove_loadout is not None:
+        LOADOUTS.remove(remove_loadout)
+    LOADOUTS.append(loadout)
+    cache.put(LOADOUTS, LOADOUT_CACHE)
