@@ -30,13 +30,15 @@ class GearNotFound(Exception):
 class Loadout():
     '''A model of a gear loadout'''
 
-    def __init__(self, name):
+    def __init__(self, name, slots=None, weights=None):
         '''Create a set of gear as a loadout'''
         self.name = name
-        self.slots = None
-        self.weights = {
-            'armor': 1.0,
-            'firearms': 1.0,
-            'stamina': 2.0,
-            'electronics': 1.0
-        }
+        self.slots = slots
+        if weights is None:
+            weights = {
+                'armor': 1.0,
+                'firearms': 1.0,
+                'stamina': 1.0,
+                'electronics': 1.0
+            }
+        self.weights = weights
